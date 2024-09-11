@@ -282,3 +282,271 @@ Ensure that all non-key columns are not transitively dependent on the primary ke
 ---
 
 These queries should help with your revision by covering essential SQL concepts using practical examples with the `Employees` table!
+
+Certainly! Here’s a clear breakdown of some often-confusing SQL concepts, with key differences and examples. This should make your understanding more solid:
+
+---
+
+### 1. **DROP vs DELETE vs TRUNCATE**
+These commands are used to remove data, but they operate at different levels.
+
+#### a. **DROP**
+- **Purpose**: Permanently removes a table or database from the system.
+- **Action**: The table and its data are completely removed.
+- **Rollback**: Cannot be rolled back (unless within a transaction, depending on the DBMS).
+  
+**Syntax**:
+```sql
+DROP TABLE Employees;  -- Removes the entire Employees table and all its data.
+```
+
+#### b. **DELETE**
+- **Purpose**: Deletes specific rows from a table.
+- **Action**: Removes data row by row based on a condition.
+- **Rollback**: Can be rolled back (if inside a transaction).
+- **Affects**: Only data, not the table structure.
+  
+**Syntax**:
+```sql
+DELETE FROM Employees WHERE employeeID = 101;  -- Deletes only employee with ID 101.
+```
+
+#### c. **TRUNCATE**
+- **Purpose**: Removes all rows from a table, but keeps the table structure.
+- **Action**: Fast because it does not generate individual row delete logs.
+- **Rollback**: Cannot be rolled back (depending on DBMS).
+  
+**Syntax**:
+```sql
+TRUNCATE TABLE Employees;  -- Deletes all rows from Employees but keeps the table.
+```
+
+**Key Differences**:
+- **DROP** removes the table itself.
+- **DELETE** removes specific rows, and you can use a `WHERE` clause.
+- **TRUNCATE** clears all rows but retains the table structure.
+
+---
+
+### 2. **UPDATE vs ALTER**
+These commands are used to modify the data or structure of a table.
+
+#### a. **UPDATE**
+- **Purpose**: Updates existing data in a table.
+- **Action**: Modifies the data in specific rows based on a condition.
+- **Affects**: Data within the table.
+
+**Syntax**:
+```sql
+UPDATE Employees
+SET hourlyPaid = 28.00
+WHERE employeeID = 101;  -- Changes the hourly rate of employee with ID 101.
+```
+
+#### b. **ALTER**
+- **Purpose**: Modifies the structure of a table (e.g., adding, removing, or modifying columns).
+- **Action**: Alters the table’s schema.
+- **Affects**: Table structure.
+
+**Syntax**:
+```sql
+ALTER TABLE Employees
+ADD departmentID INT;  -- Adds a new column departmentID to the Employees table.
+```
+
+**Key Differences**:
+- **UPDATE** modifies the **data** inside the table.
+- **ALTER** changes the **structure** of the table (e.g., adding or removing columns).
+
+---
+
+### 3. **PRIMARY KEY vs UNIQUE KEY**
+Both ensure uniqueness of values, but they have some differences.
+
+#### a. **PRIMARY KEY**
+- **Purpose**: Uniquely identifies each row in the table.
+- **Action**: Ensures no two rows have the same primary key value.
+- **Null Values**: Does not allow `NULL` values.
+- **Limit**: A table can have only one primary key.
+
+**Example**:
+```sql
+CREATE TABLE Employees (
+    employeeID INT PRIMARY KEY,  -- employeeID is the primary key
+    firstName VARCHAR(50)
+);
+```
+
+#### b. **UNIQUE KEY**
+- **Purpose**: Ensures all values in a column (or a set of columns) are unique.
+- **Action**: Similar to `PRIMARY KEY` but allows `NULL` values.
+- **Null Values**: Can allow one `NULL` value.
+- **Limit**: A table can have multiple unique keys.
+
+**Example**:
+```sql
+CREATE TABLE Employees (
+    employeeID INT,
+    mailID VARCHAR(100) UNIQUE  -- mailID must be unique for all employees.
+);
+```
+
+**Key Differences**:
+- **PRIMARY KEY** cannot be `NULL`, while **UNIQUE KEY** can allow one `NULL`.
+- A table can have **only one PRIMARY KEY** but multiple **UNIQUE KEYS**.
+
+---
+
+### 4. **WHERE vs HAVING**
+Both are used to filter data, but in different contexts.
+
+#### a. **WHERE**
+- **Purpose**: Filters rows before aggregation (or before any other operation).
+- **Use**: Used in regular `SELECT` queries.
+  
+**Example**:
+```sql
+SELECT * FROM Employees
+WHERE hourlyPaid > 20.00;  -- Filters employees with hourly rate greater than 20 before any aggregation.
+```
+
+#### b. **HAVING**
+- **Purpose**: Filters rows **after** aggregation.
+- **Use**: Used with aggregate functions like `COUNT()`, `SUM()`, etc.
+  
+**Example**:
+```sql
+SELECT hourlyPaid, COUNT(*)
+FROM Employees
+GROUP BY hourlyPaid
+HAVING COUNT(*) > 2;  -- Filters groups where more than 2 employees have the same hourly rate.
+```
+
+**Key Differences**:
+- **WHERE** filters rows **before aggregation**.
+- **HAVING** filters groups **after aggregation**.
+
+---
+
+### 5. **INNER JOIN vs LEFT JOIN vs RIGHT JOIN**
+These are used to combine data from two or more tables.
+
+#### a. **INNER JOIN**
+- **Purpose**: Returns only rows that have matching values in both tables.
+  
+**Example**:
+```sql
+SELECT E.firstName, D.departmentName
+FROM Employees E
+INNER JOIN Departments D ON E.departmentID = D.departmentID;  -- Returns only employees with matching department.
+```
+
+#### b. **LEFT JOIN (LEFT OUTER JOIN)**
+- **Purpose**: Returns all rows from the left table and the matching rows from the right table. If no match, `NULL` values are returned for the right table.
+  
+**Example**:
+```sql
+SELECT E.firstName, D.departmentName
+FROM Employees E
+LEFT JOIN Departments D ON E.departmentID = D.departmentID;  -- Returns all employees, even if they have no department.
+```
+
+#### c. **RIGHT JOIN (RIGHT OUTER JOIN)**
+- **Purpose**: Returns all rows from the right table and the matching rows from the left table. If no match, `NULL` values are returned for the left table.
+  
+**Example**:
+```sql
+SELECT E.firstName, D.departmentName
+FROM Employees E
+RIGHT JOIN Departments D ON E.departmentID = D.departmentID;  -- Returns all departments, even if no employees are assigned.
+```
+
+**Key Differences**:
+- **INNER JOIN** returns only matching rows from both tables.
+- **LEFT JOIN** returns all rows from the left table and matches from the right.
+- **RIGHT JOIN** returns all rows from the right table and matches from the left.
+
+---
+
+### 6. **UNION vs UNION ALL**
+Both combine results from two `SELECT` queries, but they differ in how they handle duplicates.
+
+#### a. **UNION**
+- **Purpose**: Combines the results of two `SELECT` queries and removes duplicates.
+  
+**Example**:
+```sql
+SELECT firstName FROM Employees
+UNION
+SELECT firstName FROM Managers;  -- Combines employees' and managers' first names, removes duplicates.
+```
+
+#### b. **UNION ALL**
+- **Purpose**: Combines the results of two `SELECT` queries but **includes** duplicates.
+  
+**Example**:
+```sql
+SELECT firstName FROM Employees
+UNION ALL
+SELECT firstName FROM Managers;  -- Combines employees' and managers' first names, includes duplicates.
+```
+
+**Key Differences**:
+- **UNION** removes duplicates.
+- **UNION ALL** includes all records, even duplicates.
+
+---
+
+### 7. **VIEW vs INDEX**
+Both improve query performance or manage data presentation, but they serve different purposes.
+
+#### a. **VIEW**
+- **Purpose**: A virtual table based on a `SELECT` query. It does not store data but retrieves it dynamically from the underlying tables.
+  
+**Example**:
+```sql
+CREATE VIEW EmployeeSummary AS
+SELECT firstName, lastName, hireDate FROM Employees;  -- Creates a view of selected columns.
+```
+
+#### b. **INDEX**
+- **Purpose**: A data structure that improves the speed of data retrieval operations on a table. It affects performance, not the data itself.
+  
+**Example**:
+```sql
+CREATE INDEX idx_lastName ON Employees(lastName);  -- Creates an index on the lastName column for faster searches.
+```
+
+**Key Differences**:
+- **VIEW** is a virtual table that simplifies complex queries.
+- **INDEX** speeds up retrieval by organizing the data for faster search.
+
+---
+
+### 8. **DISTINCT vs GROUP BY**
+Both are used to deal with duplicates, but they work differently.
+
+#### a. **DISTINCT**
+- **Purpose**: Removes duplicate rows from the result set.
+  
+**Example**:
+```sql
+SELECT DISTINCT hourlyPaid FROM Employees;  -- Returns unique hourly rates from the Employees table.
+```
+
+#### b. **GROUP BY**
+- **Purpose**: Groups rows that have the same values in specified columns, often used with aggregate functions.
+  
+**Example**:
+```sql
+SELECT hourlyPaid, COUNT(*) FROM Employees
+GROUP BY hourlyPaid;  -- Groups employees by hourly rate and counts them.
+```
+
+**Key Differences**:
+- **DISTINCT** removes duplicates from the result set.
+- **GROUP BY** groups rows based on column values and allows for aggregation.
+
+---
+
+By understanding these differences with practical examples, you'll have a clear grasp of how and when to use each SQL command.
